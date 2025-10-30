@@ -69,7 +69,7 @@ def get_nearby_events(
     # Filter nearby events
     nearby_events = []
     for event in events:
-        distance = calculate_distance(``
+        distance = calculate_distance(
             user.location_latitude,
             user.location_longitude,
             event.latitude,
