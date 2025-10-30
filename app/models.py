@@ -10,15 +10,58 @@ from sqlalchemy import (
     ForeignKey,
     CheckConstraint,
     UniqueConstraint,
+    Index,
+    Float,
 )
 from datetime import datetime, timezone
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, composite
 
 
 class TicketStatus(PyEnum):
     RESERVED = "reserved"
     PAID = "paid"
     EXPIRED = "expired"
+    
+class Venue:
+    """Value object for composite venue/location mapping, for storing address + coordinates.
+
+    Attributes:
+        latitude (float): Latitude in decimal degrees.
+        longitude (float): Longitude in decimal degrees.
+        address (str): Human-readable address.
+    """
+
+    def __init__(self, latitude: float | None, longitude: float | None, address: str | None):
+        self.latitude = float(latitude) if latitude is not None else None
+        self.longitude = float(longitude) if longitude is not None else None
+        self.address = address
+
+    def __composite_values__(self):
+        return self.latitude, self.longitude, self.address
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"Venue(lat={self.latitude}, lng={self.longitude}, addr={self.address!r})"
+    
+    def distance_to(self, lat, lng):
+        from math import radians, sin, cos, sqrt, atan2
+        R = 6371  # km
+        dlat = radians(lat - self.latitude)
+        dlon = radians(lng - self.longitude)
+        a = sin(dlat / 2) ** 2 + cos(radians(self.latitude)) * cos(radians(lat)) * sin(dlon / 2) ** 2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        return R * c  # distance in km
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Venue):
+            return False
+        return (
+            self.latitude == other.latitude
+            and self.longitude == other.longitude
+            and self.address == other.address
+        )
+
+    def __ne__(self, other) -> bool:
+        return not self.__eq__(other)
 
 
 class User(Base):
@@ -27,17 +70,19 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)
     email = Column(String(255), nullable=False, unique=True, index=True)
+    
+    # User's current location as a composite (latitude, longitude, address)
+    location_address = Column(String(255), nullable=True)
+    location_latitude = Column(Float, nullable=True)
+    location_longitude = Column(Float, nullable=True)
+
+    # Composite mapped attribute for convenience
+    location = composite(Venue, location_latitude, location_longitude, location_address)
 
     # Relationships
-    tickets = relationship(
-        "Ticket",
-        back_populates="user",
-        cascade="all, delete-orphan",
-    )
+    tickets = relationship("Ticket", back_populates="user", cascade="all, delete-orphan",)
 
-    __table_args__ = (
-        UniqueConstraint("email", name="uq_users_email"),
-    )
+    __table_args__ = (UniqueConstraint("email", name="uq_users_email"),)
 
     def __repr__(self) -> str:  # pragma: no cover - repr helper
         return f"<User id={self.id} name={self.name!r} email={self.email!r}>"
@@ -53,7 +98,11 @@ class Event(Base):
     end_time = Column(DateTime(timezone=True), nullable=False)
     total_tickets = Column(Integer, nullable=False)
     tickets_sold = Column(Integer, nullable=False, default=0)
-    venue = Column(String(255), nullable=False)
+    
+    address = Column(String(255), nullable=True)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
+    venue = composite(Venue, latitude, longitude, address)
 
     # Relationships
     tickets = relationship(
@@ -68,6 +117,9 @@ class Event(Base):
             "tickets_sold <= total_tickets",
             name="ck_events_tickets_sold_not_exceed_total",
         ),
+        Index("ix_events_latitude", "latitude"),
+        Index("ix_events_longitude", "longitude"),
+        Index("ix_events_start_time", "start_time"),
     )
 
     def __repr__(self) -> str:  # pragma: no cover - repr helper
@@ -110,4 +162,5 @@ class Ticket(Base):
             f"<Ticket id={self.id} user_id={self.user_id} "
             f"event_id={self.event_id} status={self.status.value}>"
         )
+
 

@@ -14,7 +14,9 @@ def create_event(payload: EventCreate, db: Session = Depends(get_db)):
         start_time=payload.start_time,
         end_time=payload.end_time,
         total_tickets=payload.total_tickets,
-        venue=payload.venue,
+        address=payload.venue.address,
+        latitude=payload.venue.latitude,
+        longitude=payload.venue.longitude,
     )
     db.add(event)
     db.commit()

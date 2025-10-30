@@ -32,9 +32,6 @@ def reserve_ticket(payload: TicketCreate, db: Session = Depends(get_db)):
     )
     db.add(ticket)
 
-    # Update event tickets_sold
-    event.tickets_sold += 1
-
     db.commit()
     db.refresh(ticket)
     
@@ -57,6 +54,11 @@ def pay_for_ticket(ticket_id: int, db: Session = Depends(get_db)):
 
     # Update status
     ticket.status = TicketStatus.PAID
+    
+    # Increment tickets_sold for the event
+    event = db.query(Event).filter(Event.id == ticket.event_id).first()
+    event.tickets_sold += 1
+    
     db.commit()
     db.refresh(ticket)
 
