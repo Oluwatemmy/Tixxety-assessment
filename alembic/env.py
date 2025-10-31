@@ -3,8 +3,10 @@ from dotenv import load_dotenv
 from alembic import context
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
-from app.database import engine, Base
-from app import models  
+from app.database import Base
+
+# Load environment variables from .env file
+load_dotenv()
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -16,7 +18,6 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
     
 # Get and fix the DATABASE_URL if needed
-# database_url = os.getenv("E_URL", "sqlite:///./review_removal/review_tasks.db")
 database_url = os.getenv("DATABASE_URL", "sqlite:///./app/tixxety.db")
 
 # Set the fixed URL for Alembic

@@ -1,5 +1,4 @@
 # run_migrations.py
-import os
 from alembic import command
 from dotenv import load_dotenv
 from alembic.config import Config

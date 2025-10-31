@@ -1,5 +1,5 @@
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Optional
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 class UserCreate(BaseModel):
     name: str

@@ -1,27 +1,18 @@
-from .database import Base
-from enum import Enum as PyEnum
+from app.database import Base
 from sqlalchemy import (
-    Enum as sqlEnum,
     Column,
     Integer,
     String,
     Text,
     DateTime,
-    ForeignKey,
     CheckConstraint,
-    UniqueConstraint,
     Index,
     Float,
 )
-from datetime import datetime, timezone
+from math import radians, sin, cos, sqrt, atan2
 from sqlalchemy.orm import relationship, composite
 
 
-class TicketStatus(PyEnum):
-    RESERVED = "reserved"
-    PAID = "paid"
-    EXPIRED = "expired"
-    
 class Venue:
     """Value object for composite venue/location mapping, for storing address + coordinates.
 
@@ -43,7 +34,6 @@ class Venue:
         return f"Venue(lat={self.latitude:.4f}, lng={self.longitude:.4f}, addr={self.address!r})"
 
     def distance_to(self, lat, lng):
-        from math import radians, sin, cos, sqrt, atan2
         R = 6371  # km
         dlat = radians(lat - self.latitude)
         dlon = radians(lng - self.longitude)
@@ -62,30 +52,6 @@ class Venue:
 
     def __ne__(self, other) -> bool:
         return not self.__eq__(other)
-
-
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), nullable=False)
-    email = Column(String(255), nullable=False, unique=True, index=True)
-    
-    # User's current location as a composite (latitude, longitude, address)
-    location_address = Column(String(255), nullable=True)
-    location_latitude = Column(Float, nullable=True)
-    location_longitude = Column(Float, nullable=True)
-
-    # Composite mapped attribute for convenience
-    location = composite(Venue, location_latitude, location_longitude, location_address)
-
-    # Relationships
-    tickets = relationship("Ticket", back_populates="user", cascade="all, delete-orphan",)
-
-    __table_args__ = (UniqueConstraint("email", name="uq_users_email"),)
-
-    def __repr__(self) -> str:  # pragma: no cover - repr helper
-        return f"<User id={self.id} name={self.name!r} email={self.email!r}>"
 
 
 class Event(Base):
@@ -124,43 +90,3 @@ class Event(Base):
 
     def __repr__(self) -> str:  # pragma: no cover - repr helper
         return f"<Event id={self.id} title={self.title!r} venue={self.venue!r}>"
-
-
-class Ticket(Base):
-    __tablename__ = "tickets"
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(
-        Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-    )
-    event_id = Column(
-        Integer,
-        ForeignKey("events.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-    )
-    status = Column(
-        sqlEnum(TicketStatus, name="ticket_status", native_enum=False),
-        nullable=False,
-        default=TicketStatus.RESERVED,
-    )
-    created_at = Column(
-        DateTime(timezone=True),
-        nullable=False,
-        default=lambda: datetime.now(timezone.utc),
-    )
-
-    # Relationships
-    user = relationship("User", back_populates="tickets")
-    event = relationship("Event", back_populates="tickets")
-
-    def __repr__(self) -> str:  # pragma: no cover - repr helper
-        return (
-            f"<Ticket id={self.id} user_id={self.user_id} "
-            f"event_id={self.event_id} status={self.status.value}>"
-        )
-
-

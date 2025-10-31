@@ -3,7 +3,6 @@ Tests for user-related API endpoints.
 """
 import pytest
 from fastapi import status
-from datetime import datetime, timezone, timedelta
 
 
 class TestUserCreation:

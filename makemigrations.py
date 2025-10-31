@@ -1,4 +1,3 @@
-import os
 from alembic import command
 from datetime import datetime
 from dotenv import load_dotenv

@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from app.models import User
+from app.models import Event
 from app.database import get_db
-from app.models import User, Event
-from app.schemas.userpayload import UserCreate
-from app.schemas.event_payload import EventResponse
-from math import radians, sin, cos, sqrt, atan2
+from sqlalchemy.orm import Session
 from datetime import datetime, timezone
+from app.schemas.userpayload import UserCreate
+from math import radians, sin, cos, sqrt, atan2
+from app.schemas.event_payload import EventResponse
+from fastapi import APIRouter, Depends, HTTPException
 
 router = APIRouter()
 

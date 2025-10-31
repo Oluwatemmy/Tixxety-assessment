@@ -2,9 +2,9 @@
 Tests for database models and core business logic.
 """
 import pytest
+from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone, timedelta
 from app.models import User, Event, Ticket, TicketStatus, Venue
-from sqlalchemy.exc import IntegrityError
 
 
 class TestUserModel:

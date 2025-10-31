@@ -8,13 +8,11 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.exc import IntegrityError
-import os
 from unittest.mock import patch, MagicMock
 
 from app.database import Base, get_db
 from main import app
-from app import tasks
-from app.models import User, Event, Ticket, TicketStatus, Venue
+from app.models import User, Event, Ticket, TicketStatus
 from datetime import datetime, timezone, timedelta
 
 

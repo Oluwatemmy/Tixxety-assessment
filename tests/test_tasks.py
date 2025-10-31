@@ -105,9 +105,7 @@ class TestExpireUnpaidTicketTask:
     
     def test_task_with_multiple_tickets_same_user(self, db_session, sample_user, sample_event):
         """Test expiring one ticket when user has multiple tickets."""
-        # Create multiple tickets for same user
-        from app.models import Ticket
-        
+        # Create multiple tickets for same user        
         ticket1 = Ticket(
             user_id=sample_user.id,
             event_id=sample_event.id,

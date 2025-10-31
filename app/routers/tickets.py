@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from app.models import User
+from app.models import Event
 from app.database import get_db
-from app.models import Ticket, User, Event, TicketStatus
-from app.schemas.ticket_payload import TicketCreate, TicketResponse
-from app.models import TicketStatus
+from sqlalchemy.orm import Session
 from app.tasks import expire_unpaid_ticket
+from app.models import Ticket, TicketStatus
+from fastapi import APIRouter, Depends, HTTPException
+from app.schemas.ticket_payload import TicketCreate, TicketResponse
 
 router = APIRouter()
 

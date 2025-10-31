@@ -1,7 +1,6 @@
-from datetime import datetime
 from app.database import SessionLocal
-from app.models import Ticket, TicketStatus
 from .celery_worker import celery_app
+from app.models import Ticket, TicketStatus
 
 @celery_app.task
 def expire_unpaid_ticket(ticket_id: int, db_session=None) -> None:

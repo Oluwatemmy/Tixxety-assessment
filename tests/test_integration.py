@@ -4,8 +4,6 @@ Integration tests for the complete Tixxety API.
 import pytest
 from fastapi import status
 from datetime import datetime, timezone, timedelta
-from unittest.mock import patch
-
 
 class TestAPIIntegration:
     """Test complete API workflows and integration scenarios."""

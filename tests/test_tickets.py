@@ -1,9 +1,10 @@
 """
 Tests for ticket-related API endpoints.
 """
-import pytest
 from fastapi import status
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
+from app.models import Event
+from datetime import datetime, timezone, timedelta
 
 
 class TestTicketReservation:
@@ -222,10 +223,7 @@ class TestTicketWorkflow:
     
     def test_reserve_until_sold_out(self, client, sample_user, db_session, mock_celery_task):
         """Test reserving tickets until event is sold out."""
-        # Create event with only 2 tickets
-        from app.models import Event
-        from datetime import datetime, timezone, timedelta
-        
+        # Create event with only 2 tickets        
         future_time = datetime.now(timezone.utc) + timedelta(days=7)
         small_event = Event(
             title="Small Event",
@@ -299,10 +297,7 @@ class TestTicketEdgeCases:
     
     def test_payment_race_condition_simulation(self, client, sample_user, sample_event, db_session, mock_celery_task):
         """Test payment when event becomes sold out between check and payment."""
-        # Create event with exactly 1 ticket available
-        from app.models import Event
-        from datetime import datetime, timezone, timedelta
-        
+        # Create event with exactly 1 ticket available        
         future_time = datetime.now(timezone.utc) + timedelta(days=7)
         limited_event = Event(
             title="Limited Event",
@@ -337,9 +332,6 @@ class TestTicketEdgeCases:
     
     def test_ticket_reservation_with_zero_capacity_event(self, client, sample_user, db_session, mock_celery_task):
         """Test reserving ticket for event with zero capacity."""
-        from app.models import Event
-        from datetime import datetime, timezone, timedelta
-        
         future_time = datetime.now(timezone.utc) + timedelta(days=7)
         zero_event = Event(
             title="Zero Capacity Event",

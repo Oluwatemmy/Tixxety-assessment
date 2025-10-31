@@ -1,5 +1,5 @@
-from celery import Celery
 import os
+from celery import Celery
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
