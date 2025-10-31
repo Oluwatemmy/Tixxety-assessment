@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api import events, tickets, users
+from app.routers import events, tickets, users
 
 
 app = FastAPI(

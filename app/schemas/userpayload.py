@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Optional
 
 class UserCreate(BaseModel):
@@ -16,5 +16,4 @@ class UserResponse(BaseModel):
     location_latitude: Optional[float] = None
     location_longitude: Optional[float] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

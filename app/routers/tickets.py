@@ -36,8 +36,10 @@ def reserve_ticket(payload: TicketCreate, db: Session = Depends(get_db)):
     db.refresh(ticket)
     
     # Schedule expiration after 2 minutes
-    expire_unpaid_ticket.apply_async((ticket.id,), countdown=120)
-
+    try:
+        expire_unpaid_ticket.apply_async((ticket.id,), countdown=120)
+    except Exception as e:
+        print(f"Failed to schedule expiration task: {e}")
     return ticket
 
 
@@ -52,13 +54,13 @@ def pay_for_ticket(ticket_id: int, db: Session = Depends(get_db)):
     if ticket.status != TicketStatus.RESERVED:
         raise HTTPException(status_code=400, detail="Ticket already paid or expired")
 
-    # Update status
+    # Ensure Event still has capacity
+    if ticket.event.tickets_sold >= ticket.event.total_tickets:
+        raise HTTPException(status_code=400, detail="Event is sold out")
+
     ticket.status = TicketStatus.PAID
-    
-    # Increment tickets_sold for the event
-    event = db.query(Event).filter(Event.id == ticket.event_id).first()
-    event.tickets_sold += 1
-    
+    ticket.event.tickets_sold += 1
+
     db.commit()
     db.refresh(ticket)
 

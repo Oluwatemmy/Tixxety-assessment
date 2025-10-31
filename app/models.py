@@ -40,8 +40,8 @@ class Venue:
         return self.latitude, self.longitude, self.address
 
     def __repr__(self) -> str:  # pragma: no cover
-        return f"Venue(lat={self.latitude}, lng={self.longitude}, addr={self.address!r})"
-    
+        return f"Venue(lat={self.latitude:.4f}, lng={self.longitude:.4f}, addr={self.address!r})"
+
     def distance_to(self, lat, lng):
         from math import radians, sin, cos, sqrt, atan2
         R = 6371  # km
