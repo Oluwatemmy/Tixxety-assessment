@@ -9,14 +9,12 @@ pip install httpx pytest-mock
 
 ### 2. Run All Tests
 ```bash
-# Option 1: Using the batch file (Windows)
-run_tests.bat
+# Option 1: Using the Python script
+python run_tests.py
 
 # Option 2: Using pytest directly
 python -m pytest tests/ -v
 
-# Option 3: Using the Python script
-python run_tests.py
 ```
 
 ### 3. Run Specific Tests
@@ -108,4 +106,4 @@ tests/test_tickets.py::TestTicketReservation::test_reserve_ticket_success ✓
 tests/test_integration.py::TestAPIIntegration::test_complete_ticket_booking_flow ✓
 ```
 
-The tests use an in-memory SQLite database, so they run fast and don't affect your main database.
+The tests use an in-memory SQLite database, so they run fast and don't affect the main database.
