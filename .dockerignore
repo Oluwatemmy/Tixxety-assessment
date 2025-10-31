@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+coverage.xml
+*.cover
+.pytest_cache/
+tests/
+
+# IDE / Editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS / Misc
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.bak
+
+# Git / CI
+.git/
+.gitignore
+.github/
+.gitlab/
+.gitlab-ci.yml
+
+# Docker / Compose temp
+docker-compose.override.yml
+docker-compose.dev.yml
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Environment files
+.env
+.env.*
+
+# Sqlite database for testing
+.db
