@@ -17,7 +17,7 @@ class TestExpireUnpaidTicketTask:
         assert sample_ticket.status == TicketStatus.RESERVED
         
         # Execute the task
-        result = expire_unpaid_ticket(sample_ticket.id, db_session)
+        result = expire_unpaid_ticket(sample_ticket.id)
         
         # Refresh ticket from database
         db_session.refresh(sample_ticket)
@@ -71,7 +71,7 @@ class TestExpireUnpaidTicketTask:
         
         # Task should handle exception gracefully
         try:
-            result = expire_unpaid_ticket(1)
+            expire_unpaid_ticket(1)
             # Should not raise exception due to finally block
         except Exception:
             pytest.fail("Task should handle database exceptions gracefully")
@@ -167,7 +167,6 @@ class TestCeleryTaskIntegration:
     def test_task_not_scheduled_on_payment(self, mock_task, client, sample_ticket):
         """Test that no additional task is scheduled when paying for ticket."""
         response = client.post(f"/tickets/{sample_ticket.id}/pay")
-        
         assert response.status_code == 200
         
         # No task should be scheduled during payment

@@ -37,13 +37,25 @@ def enable_sqlite_foreign_keys(dbapi_connection, connection_record):
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, expire_on_commit=False, bind=engine)
 
 
+# Ensure Celery tasks use a separate session so closing it doesn't affect the test session
+@pytest.fixture(autouse=True)
+def patch_task_session_factory():
+    """Patch app.tasks.SessionLocal to return a fresh session each time.
+
+    This avoids closing the shared db_session used by tests when the task
+    calls `db.close()` in its finally block.
+    """
+    with patch('app.tasks.SessionLocal', side_effect=TestingSessionLocal) as mock:
+        yield mock
+
+
 @pytest.fixture(scope="function")
 def db_session():
     """Create a fresh database session for each test."""
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
-    with patch('app.tasks.SessionLocal', return_value=db):
-        yield db
+    # Return the session for test usage; tasks will use their own sessions via the autouse patch
+    yield db
     db.close()
     Base.metadata.drop_all(bind=engine)
 
@@ -56,15 +68,11 @@ def client(db_session):
             yield db_session
         finally:
             pass
-    
-    # Patch SessionLocal in tasks module to use test session
-    with patch('app.tasks.SessionLocal') as mock_session:
-        mock_session.return_value = db_session
-        
-        app.dependency_overrides[get_db] = override_get_db
-        with TestClient(app) as test_client:
-            yield test_client
-        app.dependency_overrides.clear()
+
+    app.dependency_overrides[get_db] = override_get_db
+    with TestClient(app) as test_client:
+        yield test_client
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture
