@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 load_dotenv(override=True)
 
 # Get database URL from environment ()
-url = os.getenv("DATABASE_URL", "sqlite:///./app/tixxety.db")
+url = os.getenv("DATABASE_URL")
 
 engine = create_engine(url)
 

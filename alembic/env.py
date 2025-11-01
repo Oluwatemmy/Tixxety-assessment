@@ -18,7 +18,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
     
 # Get and fix the DATABASE_URL if needed
-database_url = os.getenv("DATABASE_URL", "sqlite:///./app/tixxety.db")
+database_url = os.getenv("DATABASE_URL")
 
 # Set the fixed URL for Alembic
 config.set_main_option("sqlalchemy.url", database_url)
@@ -53,7 +53,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-        render_as_batch=True,  # For SQLite migrations
+        render_as_batch=True, 
     )
 
     with context.begin_transaction():
