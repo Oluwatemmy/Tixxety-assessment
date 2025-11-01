@@ -7,14 +7,21 @@ FastAPI service for event and ticket booking management with Celery background t
 ## Assumptions
 
 - **Python 3.11+** installed
-- **SQLite** used by default (no database setup needed)
-- **Optional**: Redis for Celery tasks, PostgreSQL for production
+- **PostgreSQL** database running locally or via Docker
+- **Redis** for Celery task queue and result backend
 
 ---
 
 ## Setup
 
-1. **Create virtual environment and install dependencies:**
+1. **Clone the repository:**
+
+```powershell
+git clone https://github.com/Oluwatemmy/Tixxety-assessment.git
+cd Tixxety-assessment
+```
+
+2. **Create virtual environment and install dependencies:**
 
 ```powershell
 python -m venv venv
@@ -22,19 +29,14 @@ venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-2. **Environment variables (optional):**
+3. **Set up environment variables:**
 
-For PostgreSQL + Redis (production):
+Create a `.env` file in the project root:
 ```env
-DATABASE_URL=postgresql+psycopg2://USER:PASS@localhost:5432/tixxety
+DATABASE_URL=postgresql+psycopg2://postgres:postgres@localhost:5432/tixxety
 CELERY_BROKER_URL=redis://localhost:6379/0
-CELERY_RESULT_BACKEND=redis://redis:6379/0
+CELERY_RESULT_BACKEND=redis://localhost:6379/0
 RESULT_EXPIRATION=3600
-```
-
-For SQLite (default - no setup needed):
-```env
-DATABASE_URL=sqlite:///./app/tixxety.db
 ```
 
 ---
@@ -49,7 +51,7 @@ uvicorn main:app --reload --port 8000
 
 **API Documentation:** http://localhost:8000/docs
 
-### 2. Run Celery worker (optional, requires Redis)
+### 2. Run Celery worker in another terminal (requires Redis already running)
 
 ```powershell
 celery -A app.celery_worker.celery_app worker --loglevel=info --pool=solo
@@ -77,7 +79,7 @@ python run_tests.py
 
 Or with pytest directly:
 ```powershell
-python -m pytest tests/ -v
+pytest -v
 ```
 
 Run specific test files:
@@ -87,22 +89,35 @@ python -m pytest tests/test_events.py -v
 python -m pytest tests/test_tickets.py -v
 ```
 
-**Note:** Tests use an isolated SQLite database and mock Celery where needed.
+**Note:** Tests use an isolated test database and mock Celery where needed.
 
 ---
 
 ## Docker (Optional)
+> Note: Make sure you have a .env file with the database and environment variables set as follows:
+```env
+DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432/tixxety
+
+REDIS_URL=redis://redis:6379/0
+CELERY_BROKER_URL=redis://redis:6379/0
+CELERY_RESULT_BACKEND=redis://redis:6379/0
+RESULT_EXPIRATION=3600
+```
 
 Build and run all services (API, Celery worker, Redis, PostgreSQL):
-
 ```powershell
 docker compose up --build -d
 ```
 
+Apply migrations inside the backend container:
+```powershell
+docker compose exec tixxety-backend python run_migrations.py
+```
+
 View logs:
 ```powershell
-docker compose logs -f backend
-docker compose logs -f worker
+docker compose logs -f tixxety-backend
+docker compose logs -f tixxety-worker
 ```
 
 Stop services:
@@ -125,13 +140,16 @@ app/
   tasks.py           # Celery background tasks
   celery_worker.py   # Celery app configuration
 alembic/             # Database migration scripts
-main.py              # FastAPI application entry point
 tests/               # Pytest test suite
+main.py              # FastAPI application entry point
+makemigrations.py    # Script to create new migrations
+run_migrations.py    # Script to apply migrations
+run_tests.py         # Script to run the test suite
 docker-compose.yml   # Docker orchestration
 Dockerfile           # Container image definition
+.dockerignore        # Docker ignore file
 requirements.txt     # Python dependencies
 ```
-
 ---
 
 ## API Endpoints
@@ -139,6 +157,7 @@ requirements.txt     # Python dependencies
 - `GET /` - Health check
 - `POST /users/` - Create user
 - `GET /users/for-you/` - Get nearby events for a user
+- `GET /users/{user_id}/tickets` - Get tickets for a user
 - `POST /events/` - Create event
 - `GET /events/` - List all events
 - `POST /tickets/` - Reserve ticket

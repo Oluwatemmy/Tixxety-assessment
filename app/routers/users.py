@@ -1,11 +1,11 @@
-from app.models import User
-from app.models import Event
 from app.database import get_db
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
+from app.models import User, Event, Ticket
 from app.schemas.userpayload import UserCreate
 from math import radians, sin, cos, sqrt, atan2
 from app.schemas.event_payload import EventResponse
+from app.schemas.ticket_payload import TicketResponse
 from fastapi import APIRouter, Depends, HTTPException
 
 router = APIRouter()
@@ -83,3 +83,15 @@ def get_nearby_events(
     nearby_events.sort(key=lambda x: x[1])
 
     return [event for event, _ in nearby_events]
+
+
+@router.get("/{user_id}/tickets", response_model=list[TicketResponse])
+def get_user_tickets(user_id: int, db: Session = Depends(get_db)):
+    # Get the user
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Fetch user's tickets
+    tickets = db.query(Ticket).filter(Ticket.user_id == user.id).all()
+    return tickets
